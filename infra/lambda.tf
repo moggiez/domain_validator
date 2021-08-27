@@ -5,7 +5,7 @@ module "scheduledLambda" {
   s3_bucket   = aws_s3_bucket._
   environment = "PROD"
 
-  timeout = 60
+  timeout = 600
 
   policies = [
     aws_iam_policy.s3_access.arn,
