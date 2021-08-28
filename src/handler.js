@@ -65,7 +65,12 @@ class Handler {
       if (hasValidationExpired(domain)) {
         newState = DOMAIN_STATES.INVALID;
       } else {
-        const cnameValue = await resolveCname(domain.ValidationRecordName);
+        let cnameValue = null;
+        try {
+          cnameValue = await resolveCname(domain.ValidationRecordName);
+        } catch (err) {
+          cnameValue = "N/A";
+        }
         if (cnameValue != null) {
           newState =
             cnameValue == domain.ValidationRecordValue
