@@ -71,13 +71,12 @@ class Handler {
         } catch (err) {
           cnameValue = "N/A";
         }
-        if (cnameValue != null) {
-          newState =
-            cnameValue == domain.ValidationRecordValue
-              ? DOMAIN_STATES.VALIDATED
-              : hasValidationExpired(domain)
-              ? DOMAIN_STATES.PENDING_VALIDATION
-              : DOMAIN_STATES.INVALID;
+        if (cnameValue != null && cnameValue == domain.ValidationRecordValue) {
+          newState = DOMAIN_STATES.VALIDATED;
+        } else if (hasValidationExpired(domain)) {
+          newState = DOMAIN_STATES.INVALID;
+        } else {
+          newState = DOMAIN_STATES.PENDING_VALIDATION;
         }
       }
       if (initialState !== newState) {
