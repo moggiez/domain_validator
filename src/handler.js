@@ -51,14 +51,14 @@ class Handler {
     this.event = event;
   }
 
-  async handle() {
+  async handle(isPreview) {
     const domains = await getDomainsPendingValidation();
     for (const domain of domains.Items) {
-      await this.validateDomain(domain);
+      await this.validateDomain(domain, isPreview);
     }
   }
 
-  async validateDomain(domain) {
+  async validateDomain(domain, isPreview) {
     try {
       const initialState = domain.ValidationState;
       let newState = DOMAIN_STATES.PENDING_VALIDATION;
@@ -71,6 +71,19 @@ class Handler {
         } catch (err) {
           cnameValue = "N/A";
         }
+
+        if (isPreview) {
+          console.log(`Searching for CNAME results. Value: ${cnameValue}.`);
+          console.log(
+            `Is the same as required: ${
+              cnameValue == domain.ValidationRecordValue
+            }`
+          );
+          console.log(
+            `Has validation expired: ${hasValidationExpired(domain)}`
+          );
+        }
+
         if (cnameValue != null && cnameValue == domain.ValidationRecordValue) {
           newState = DOMAIN_STATES.VALIDATED;
         } else if (hasValidationExpired(domain)) {
@@ -79,8 +92,12 @@ class Handler {
           newState = DOMAIN_STATES.PENDING_VALIDATION;
         }
       }
-      if (initialState !== newState) {
+      if (initialState !== newState && !isPreview) {
         await setDomainValidationState(domain, newState);
+      }
+
+      if (isPreview) {
+        console.log(`Domain ${domain.DomainName} new state is ${newState}`);
       }
       this.callback(null, "Success");
     } catch (err) {
